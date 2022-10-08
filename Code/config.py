@@ -8,7 +8,6 @@ def load_config():
                         default='/Dataset/MSRA-TD500',
                         help='dataset path')
 
-
     # parameters
     parser.add_argument('-e',
                         '--epochs',
