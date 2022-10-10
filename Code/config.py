@@ -5,7 +5,7 @@ def load_config():
 
     parser.add_argument('--path',
                         type=str,
-                        default='/Dataset/MSRA-TD500',
+                        default='Dataset/ICPR2018',
                         help='dataset path')
 
     # parameters
