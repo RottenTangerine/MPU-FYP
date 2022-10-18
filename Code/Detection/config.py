@@ -6,7 +6,7 @@ def load_config():
     # dataset
     parser.add_argument('--path',
                         type=str,
-                        default='Dataset/ICPR2018',
+                        default='../Dataset/ICPR2018',
                         help='dataset path')
 
     parser.add_argument('-r',
