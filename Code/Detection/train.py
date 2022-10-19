@@ -4,7 +4,6 @@ from torch.utils.data import DataLoader, random_split
 from dataset import ICPRDataset
 from Model.CTPN import CTPN
 from loss import CTPN_loss
-import uuid
 
 import torch
 import torch.nn as nn
@@ -15,7 +14,7 @@ import gc
 
 
 args = load_config()
-train_id = uuid.uuid1()
+train_id = int(time.time())
 resume_epoch = 0
 
 # dataset
@@ -29,23 +28,31 @@ print(f'Train data: {len(train_dataset)}, Validate Data:{len(validate_dataset)}'
 
 # initialize
 device = torch.device('cuda' if args.cuda and torch.cuda.is_available() else 'cpu')
+print(f'Current device: {device}')
 
 model = CTPN().to(device)
 
 criterion = CTPN_loss(device)
 optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
-schedular = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
+schedular = torch.optim.lr_scheduler.StepLR(optimizer, step_size=8, gamma=0.1)
 
 
 # continue training
-# ckpt_path = ''
-# check_point = torch.load(ckpt_path)
-# model.load_state_dict(check_point['state_dict'])
-# resume_epoch =  check_point['epoch']
+try:
+    most_recent_check_point = os.listdir('checkpoint')[-1]
+    ckpt_path = os.path.join('checkpoint', most_recent_check_point)
+    check_point = torch.load(ckpt_path)
+    model.load_state_dict(check_point['state_dict'])
+    resume_epoch = check_point['epoch']
+    print(f'Successfully load checkpoint {most_recent_check_point}, '
+          f'start training from epoch {resume_epoch + 1}, '
+          f'loss: {check_point["loss"]}')
+except:
+    print('fail to load checkpoint, train from zero beginning')
 
 # train
 loss = 0
-for epoch in range(resume_epoch, args.epochs):
+for epoch in range(resume_epoch + 1, args.epochs):
     for i, (imgs, classes, regrs) in enumerate(train_loader):
         imgs = imgs.to(device)
         classes = classes.to(device)
@@ -59,9 +66,8 @@ for epoch in range(resume_epoch, args.epochs):
         loss.backward()
         optimizer.step()
 
-        torch.cuda.empty_cache()
-        if i % 10 == 0:
-            print(f'Training Epoch: {epoch + 1}/{args.epochs} [{i}/{len(train_loader)}]\t'
+        if i % 100 == 0:
+            print(f'Training Epoch: {epoch}/{args.epochs} [{i}/{len(train_loader)}]\t'
                   f'Loss: {loss.item():0.4f}\tLR: {optimizer.state_dict()["param_groups"][0]["lr"]:0.6f}')
     schedular.step()
 
@@ -70,13 +76,6 @@ for epoch in range(resume_epoch, args.epochs):
                 'state_dict': model.state_dict(),
                 'loss': loss,
                 }, f'checkpoint/{train_id}_{epoch}.pt')
-    # # check point
-    # os.makedirs('checkpoint', exist_ok=True)
-    # torch.save({'epoch': epoch,
-    #             'state_dict':model.state_dict(),
-    #             'D_loss': loss,
-    #             }, f'checkpoint/{train_id}_{epoch}.pth')
-
 
 # save model
 os.makedirs('trained_model', exist_ok=True)
