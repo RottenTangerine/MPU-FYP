@@ -41,7 +41,7 @@ def load_config():
     parser.add_argument('-e',
                         '--epochs',
                         type=int,
-                        default=20,
+                        default=30,
                         help='default training epochs')
     parser.add_argument('-l',
                         '--lr',

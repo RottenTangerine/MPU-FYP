@@ -5,15 +5,15 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 
-from parse_gt import parse_gt
-from CTPN_utils import draw_gt_boxes, gen_basic_anchor, cal_rpn
+from Detection.dataset.parse_gt import parse_gt
+from Detection.dataset.CTPN_utils import draw_gt_boxes, gen_basic_anchor, cal_rpn
 
 
 class ICPRDataset(Dataset):
     def __init__(self, args):
         """
         load ICPR dataset
-        :param args: args.path contains path of the dataset directory, contains image_train and txt_train directories
+        :param args: args contains path of the dataset directory, contains image_train and txt_train directories
         """
         self.args = args
         self.path = args.path
@@ -71,7 +71,7 @@ class ICPRDataset(Dataset):
 if __name__ == '__main__':
     import numpy as np
     from torch.utils.data import DataLoader
-    from config import load_config
+    from ..config import load_config
     from icecream import ic
 
     args = load_config()

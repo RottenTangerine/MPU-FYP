@@ -1,17 +1,13 @@
 from config import load_config
 
 from torch.utils.data import DataLoader, random_split
-from dataset import ICPRDataset
-from Model.CTPN import CTPN
-from loss import CTPN_loss
+from dataset.dataset import ICPRDataset
+from model.CTPN import CTPN
+from model.loss import CTPN_loss
 
 import torch
-import torch.nn as nn
 import time
 import os
-import gc
-
-
 
 args = load_config()
 train_id = int(time.time())
@@ -75,7 +71,8 @@ for epoch in range(resume_epoch + 1, args.epochs):
     torch.save({'epoch': epoch,
                 'state_dict': model.state_dict(),
                 'loss': loss,
-                }, f'checkpoint/{train_id}_{epoch}.pt')
+                'lr': optimizer.state_dict()["param_groups"][0]["lr"],
+                }, f'checkpoint/{train_id}_{epoch:03d}.pt')
 
 # save model
 os.makedirs('trained_model', exist_ok=True)
