@@ -64,19 +64,19 @@ class ICPRDataset(Dataset):
             return m_img, cls, regr
 
         else:
-            print(f'fail to load image: {self.img_names[index]}, use the default image')
+            # print(f'fail to load image: {self.img_names[index]}, use the default image')
             return self[0]
 
 
 if __name__ == '__main__':
     import numpy as np
     from torch.utils.data import DataLoader
-    from ..config import load_config
+    from Code.Detection.config import load_config
     from icecream import ic
 
     args = load_config()
+    args.path = '../..//Dataset/ICPR2018'
 
     dataset = ICPRDataset(args)
     dataset = DataLoader(dataset, batch_size=1, shuffle=True)
     imgs, classes, regrs = next(iter(dataset))
-    ic(classes.shape, regrs.shape)

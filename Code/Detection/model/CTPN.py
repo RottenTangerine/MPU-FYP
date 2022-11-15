@@ -5,44 +5,14 @@ import torchvision.models as models
 from icecream import ic
 
 
-# class BiLSTM(nn.Module):
-#     def __init__(self, input_channel, hidden_size, bidirectional=True):
-#         super(BiLSTM, self).__init__()
-#         self.lstm = nn.LSTM(input_channel, hidden_size, bidirectional=bidirectional)
-#
-#     def forward(self, x):
-#         x = x.transpose(1, 3)
-#         recurrent, _ = self.lstm(x[0])  # therefor batch size should be 1
-#         recurrent = recurrent.unsqueeze(0)
-#         recurrent = recurrent.transpose(1, 3)
-#         return recurrent
-#
-#
-# class V2B(nn.Module):
-#     def __init__(self, kernel_size, stride, padding):
-#         super(V2B, self).__init__()
-#         self.kernel_size = kernel_size
-#         self.stride = stride
-#         self.padding = padding
-#
-#
-#     def forward(self, x):
-#         height = x.shape[2]
-#         x = F.unfold(x, self.kernel_size, padding=self.padding, stride=self.stride)
-#         x = x.reshape((x.shape[0], x.shape[1], height, -1))
-#         return x
-
-
 class CTPN(nn.Module):
     def __init__(self):
         super(CTPN, self).__init__()
         base_model = models.vgg16()
         self.vgg = nn.Sequential(*(list(base_model.features)[:-1]))
-        self.rpn = nn.Sequential(nn.Conv2d(512, 512, 3, 1, 1),
-                                 nn.ReLU(True))
         self.brnn = nn.GRU(512, 128, bidirectional=True, batch_first=True)
-        # self.v2b = V2B(3, 1, 1)
-        # self.rnn = BiLSTM(3 * 3 * 512, 128)
+        self.bert = nn
+
         self.fc = nn.Sequential(
             nn.Conv2d(256, 512, 1),
             nn.ReLU(inplace=True)
@@ -52,10 +22,9 @@ class CTPN(nn.Module):
         self.coordinate = nn.Conv2d(512, 2 * 10, 1)
 
     def forward(self, x):
+        ic(x.shape)
         x = self.vgg(x)
-        # x = self.v2b(x)
-        # x = self.rnn(x)
-        x = self.rpn(x)
+        ic(x.shape)
         x = x.permute(0, 2, 3, 1).contiguous()
         b = x.size()
         x = x.view(b[0] * b[1], b[2], b[3])

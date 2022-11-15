@@ -1,6 +1,7 @@
 from config import load_config
 
 from torch.utils.data import DataLoader, random_split
+from torch.optim import lr_scheduler
 from dataset.dataset import ICPRDataset
 from model.CTPN import CTPN
 from model.loss import CTPN_loss
@@ -16,7 +17,8 @@ resume_epoch = 0
 # dataset
 dataset = ICPRDataset(args)
 train_dataset, validate_dataset = random_split(dataset,
-                                               [l:=round(len(dataset) * (1 - args.test_split_ratio)), len(dataset) - l])
+                                               [l := round(len(dataset) * (1 - args.test_split_ratio)),
+                                                len(dataset) - l])
 train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, shuffle=True)
 validate_loader = DataLoader(dataset=validate_dataset, batch_size=args.batch_size, shuffle=True)
 
@@ -30,8 +32,10 @@ model = CTPN().to(device)
 
 criterion = CTPN_loss(device)
 optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
-schedular = torch.optim.lr_scheduler.StepLR(optimizer, step_size=8, gamma=0.1)
-
+schedular = lr_scheduler.SequentialLR(optimizer, [
+    lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=1e-7),
+    lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+], milestones=[40])
 
 # continue training
 try:
@@ -45,6 +49,9 @@ try:
           f'loss: {check_point["loss"]}')
 except:
     print('fail to load checkpoint, train from zero beginning')
+
+for _ in range(resume_epoch):
+    schedular.step()
 
 # train
 loss = 0
@@ -73,6 +80,9 @@ for epoch in range(resume_epoch + 1, args.epochs):
                 'loss': loss,
                 'lr': optimizer.state_dict()["param_groups"][0]["lr"],
                 }, f'checkpoint/{train_id}_{epoch:03d}.pt')
+
+    # validate
+    img = imgs
 
 # save model
 os.makedirs('trained_model', exist_ok=True)

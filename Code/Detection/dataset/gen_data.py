@@ -213,9 +213,9 @@ def gen_train_data(f_path=None, scale_range=(0.5, 1.5), max_angle=30):
 
         return _img, _bbox
 
-    def transform_init():nn;.l;.
+    def transform_init():
         scale = random.uniform(0.8, 1.2)
-        angle = random.uniform(-10, 10)
+        angle = random.uniform(-3, 3)
         padding = random.randint(0, 150)
 
         return scale, angle, padding
@@ -223,12 +223,12 @@ def gen_train_data(f_path=None, scale_range=(0.5, 1.5), max_angle=30):
 
 
     img, bbox = gen_page(f_path)
-    # draw_gt_boxes(img, bbox)
+    draw_gt_boxes(img, bbox)
 
     return img, bbox
 
 
 if __name__ == '__main__':
     _image, gt_box = gen_train_data('test.txt')
-    _image.save('../imgs/i_002.jpg')
+    _image.save('../imgs/i_001.jpg')
 
